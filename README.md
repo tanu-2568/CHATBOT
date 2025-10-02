@@ -1,12 +1,61 @@
-# React + Vite
+Overview
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a React + Vite powered chatbot project with a Node.js/Express backend.
+The chatbot provides an interactive interface where users can type queries and receive automated responses in real time.
 
-Currently, two official plugins are available:
+Full-stack development (React + Express)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+API integration
 
-## Expanding the ESLint configuration
+State management
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Hosting & deployment
+
+##Features
+
+Interactive Chatbot – real-time user queries and responses
+API Integration – backend handles chatbot responses
+Authentication Support – (optional if enabled) login & session
+Database Ready – structured for MongoDB integration
+Frontend + Backend Setup – complete full-stack architecture
+Tech Stack
+
+Frontend: React.js, Vite, Tailwind CSS
+
+Backend: Node.js, Express.js
+
+Database: MongoDB (can be configured in .env)
+
+Other Tools: Axios, dotenv, ESLint
+
+Database: MongoDB (can be configured in .env)
+
+Other Tools: Axios, dotenv, ESLint
+
+##Project Structure
+CHATBOT/
+│
+├── src/              # React frontend components
+├── backend/          # Express backend (APIs, routes, controllers)
+├── public/           # Static files
+├── .env              # Environment variables
+├── package.json      # Project dependencies
+└── README.md         # Documentation
+##Getting Started
+1. Clone the repo
+   git clone https://github.com/tanu-2568/CHATBOT.git
+   cd CHATBOT
+2. Install dependencies
+   npm install
+3. Set up environment variables
+  Create a .env file:
+   PORT=4000
+   MONGO_URL=mongodb://db:27017/chatbotdb
+   VITE_API_URL=http://localhost:4000
+4. Run the app
+   For frontend (Vite React):
+   npm run dev
+   For backend:
+   npm run server
+
+  
