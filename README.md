@@ -85,5 +85,8 @@ Create a .env file:
     For backend:
 
     npm run server
+6. Deployed On:
+
+   Netlify(direct link): https://sub-chatbot.netlify.app/
 
   
