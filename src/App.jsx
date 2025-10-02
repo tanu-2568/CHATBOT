@@ -7,6 +7,7 @@ import {
   signOut,
 } from "firebase/auth";
 import { auth } from "./firebase";
+import { fetchChats, postChat } from "./api"; // <- new
 
 // ---------------- BOT RESPONSE ----------------
 const generateBotResponse = (userMessage, messageHistory) => {
@@ -52,7 +53,8 @@ const AuthComponent = ({ onAuth }) => {
         const user = userCredential.user;
 
         if (user.emailVerified) {
-          onAuth(true);
+          // send email as userId to parent
+          onAuth(user.email || user.uid);
         } else {
           alert("Please verify your email before logging in.");
           await signOut(auth);
@@ -118,9 +120,10 @@ const AuthComponent = ({ onAuth }) => {
 };
 
 // ---------------- CHAT PAGE ----------------
-const ChatPage = () => {
+const ChatPage = ({ userId, onSignOut }) => {
   const [messages, setMessages] = useState([
-    { id: 1, content: "👋 Hi! I'm your AI assistant. How can I help today?", role: "assistant" },
+    // placeholder will be replaced by fetched history
+    { id: "welcome", _id: "welcome", content: "👋 Hi! I'm your AI assistant. How can I help today?", role: "assistant" },
   ]);
   const [inputMessage, setInputMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -131,19 +134,58 @@ const ChatPage = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  const handleSendMessage = () => {
+  // load history when component mounts or when userId changes
+  useEffect(() => {
+    if (!userId) return;
+    (async () => {
+      try {
+        const chats = await fetchChats(userId);
+        // normalize returned docs to match your UI keys
+        const normalized = chats.map(c => ({
+          id: c._id,
+          _id: c._id,
+          content: c.message,
+          role: c.role
+        }));
+        // if no messages, keep welcome
+        setMessages(normalized.length ? normalized : [
+          { id: "welcome", _id: "welcome", content: "👋 Hi! I'm your AI assistant. How can I help today?", role: "assistant" }
+        ]);
+      } catch (e) {
+        console.error("Failed to fetch chats", e);
+      }
+    })();
+  }, [userId]);
+
+  const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
 
-    const userMessage = { id: Date.now(), content: inputMessage, role: "user" };
-    setMessages((prev) => [...prev, userMessage]);
+    // optimistic UI: push user message locally
+    const userMsgLocal = { id: Date.now(), content: inputMessage, role: "user" };
+    setMessages((prev) => [...prev, userMsgLocal]);
+    const messageText = inputMessage;
     setInputMessage("");
     setIsTyping(true);
 
-    setTimeout(() => {
-      const botMessage = { id: Date.now() + 1, content: generateBotResponse(inputMessage, messages), role: "assistant" };
-      setMessages((prev) => [...prev, botMessage]);
+    try {
+      // persist user message
+      const savedUserMsg = await postChat({ userId, role: "user", message: messageText });
+      // generate bot response (your existing local stub)
+      const botReplyText = generateBotResponse(messageText, messages);
+      // persist bot reply
+      const savedBotMsg = await postChat({ userId, role: "assistant", message: botReplyText });
+      // update UI: replace optimistic (we appended user local msg earlier), append bot saved
+      setMessages((prev) => {
+        // remove the optimistic msg with same content & role "user" if server returned _id (optional)
+        // here we simply append the saved versions to ensure server IDs present
+        return [...prev, { id: savedUserMsg._id, _id: savedUserMsg._id, content: savedUserMsg.message, role: savedUserMsg.role }, { id: savedBotMsg._id, _id: savedBotMsg._id, content: savedBotMsg.message, role: savedBotMsg.role }];
+      });
+    } catch (e) {
+      console.error("send failed", e);
+      alert("Failed to send message. Check console for details.");
+    } finally {
       setIsTyping(false);
-    }, 1200);
+    }
   };
 
   return (
@@ -151,15 +193,30 @@ const ChatPage = () => {
       {/* Header */}
       <div className="p-4 flex items-center justify-between bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow">
         <h2 className="flex items-center gap-2 font-bold"><Bot className="w-5 h-5" /> AI Chat</h2>
-        <button onClick={() => setDarkMode(!darkMode)}>
-          {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-        </button>
+        <div className="flex items-center gap-3">
+          <button onClick={() => setDarkMode(!darkMode)}>
+            {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+          <button
+            onClick={async () => {
+              try {
+                await signOut(auth);
+                onSignOut();
+              } catch (err) {
+                console.error(err);
+              }
+            }}
+            className="text-sm bg-white/20 px-3 py-1 rounded"
+          >
+            Sign out
+          </button>
+        </div>
       </div>
 
       {/* Messages */}
       <div className="flex-1 p-4 overflow-y-auto">
         {messages.map((msg) => (
-          <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} mb-3`}>
+          <div key={msg.id || msg._id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} mb-3`}>
             <div className={`px-4 py-2 rounded-2xl max-w-xs ${msg.role === "user" ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white" : "bg-white text-gray-900 shadow"}`}>
               {msg.content}
             </div>
@@ -189,9 +246,14 @@ const ChatPage = () => {
 
 // ---------------- APP ----------------
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // userId will be email (or uid) when authenticated; null otherwise
+  const [userId, setUserId] = useState(null);
 
-  return <>{isAuthenticated ? <ChatPage /> : <AuthComponent onAuth={setIsAuthenticated} />}</>;
+  // onAuth now receives userId string (email or uid)
+  const handleAuth = (uidOrEmail) => setUserId(uidOrEmail);
+  const handleSignOut = () => setUserId(null);
+
+  return <>{userId ? <ChatPage userId={userId} onSignOut={handleSignOut} /> : <AuthComponent onAuth={handleAuth} />}</>;
 };
 
 export default App;
