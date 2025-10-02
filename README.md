@@ -14,10 +14,15 @@ Hosting & deployment
 ##Features
 
 Interactive Chatbot – real-time user queries and responses
+
 API Integration – backend handles chatbot responses
+
 Authentication Support – (optional if enabled) login & session
+
 Database Ready – structured for MongoDB integration
+
 Frontend + Backend Setup – complete full-stack architecture
+
 Tech Stack
 
 Frontend: React.js, Vite, Tailwind CSS
@@ -33,14 +38,23 @@ Database: MongoDB (can be configured in .env)
 Other Tools: Axios, dotenv, ESLint
 
 ##Project Structure
+
 CHATBOT/
+
 │
+
 ├── src/              # React frontend components
+
 ├── backend/          # Express backend (APIs, routes, controllers)
+
 ├── public/           # Static files
+
 ├── .env              # Environment variables
+
 ├── package.json      # Project dependencies
+
 └── README.md         # Documentation
+
 ##Getting Started
 
 1. Clone the repo
