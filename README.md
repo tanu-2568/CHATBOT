@@ -42,20 +42,34 @@ CHATBOT/
 ├── package.json      # Project dependencies
 └── README.md         # Documentation
 ##Getting Started
+
 1. Clone the repo
-   git clone https://github.com/tanu-2568/CHATBOT.git
+
+    git clone https://github.com/tanu-2568/CHATBOT.git
+
    cd CHATBOT
-2. Install dependencies
+
+3. Install dependencies
+
    npm install
-3. Set up environment variables
-  Create a .env file:
+
+4. Set up environment variables
+
+Create a .env file:
+
    PORT=4000
+ 
    MONGO_URL=mongodb://db:27017/chatbotdb
-   VITE_API_URL=http://localhost:4000
-4. Run the app
-   For frontend (Vite React):
+
+    VITE_API_URL=http://localhost:4000
+5. Run the app
+
+    For frontend (Vite React):
+
    npm run dev
-   For backend:
-   npm run server
+
+    For backend:
+
+    npm run server
 
   
